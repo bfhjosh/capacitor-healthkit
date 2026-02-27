@@ -5,7 +5,20 @@ import HealthKit
 var healthStore = HKHealthStore()
 
 @objc(CapacitorHealthkitPlugin)
-public class CapacitorHealthkitPlugin: CAPPlugin {
+public class CapacitorHealthkitPlugin: CAPPlugin, CAPBridgedPlugin {
+
+    public let identifier = "CapacitorHealthkitPlugin"
+    public let jsName = "CapacitorHealthkit"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "requestAuthorization", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "isAvailable", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getAuthorizationStatus", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getStatisticsCollection", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getBodyMassEntries", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getWorkouts", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getSleepAnalysis", returnType: CAPPluginReturnPromise)
+    ]
+
     @objc func requestAuthorization(_ call: CAPPluginCall) {
         if !HKHealthStore.isHealthDataAvailable() {
             return call.reject("Health data is not available.")
