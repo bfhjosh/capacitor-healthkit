@@ -313,4 +313,58 @@ public class CapacitorHealthkitPlugin: CAPPlugin {
         
         healthStore.execute(workoutQuery)
     }
+
+    @objc func getSleepAnalysis(_ call: CAPPluginCall) {
+    guard let startDateString = call.options["startDate"] as? String else {
+        return call.reject("startDate is required.")
+    }
+    
+    let endDateString = call.options["endDate"] as? String
+    let limit = call.options["limit"] as? Int ?? 0
+    
+    let _startDate = getDateFromString(inputDate: startDateString)
+    let _endDate = endDateString != nil ? getDateFromString(inputDate: endDateString!) : Date()
+    let _limit: Int = (limit == 0) ? HKObjectQueryNoLimit : limit
+    
+    guard let sleepType = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) else {
+        return call.reject("Sleep Analysis not available.")
+    }
+    
+    let predicate = HKQuery.predicateForSamples(withStart: _startDate, end: _endDate, options: .strictStartDate)
+    let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
+    
+    let query = HKSampleQuery(sampleType: sleepType, predicate: predicate, limit: _limit, sortDescriptors: [sortDescriptor]) { (_, samples, error) in
+        
+        guard let sleepSamples = samples as? [HKCategorySample], error == nil else {
+            return call.reject(error?.localizedDescription ?? "Error fetching sleep data")
+        }
+        
+        var output: [[String: Any]] = []
+        
+        for sample in sleepSamples {
+            var valueStr = "UNKNOWN"
+            
+            if sample.value == HKCategoryValueSleepAnalysis.inBed.rawValue {
+                valueStr = "INBED"
+            } else if sample.value == HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue {
+                valueStr = "ASLEEP"
+            } else if sample.value == HKCategoryValueSleepAnalysis.awake.rawValue {
+                valueStr = "AWAKE"
+            }
+            
+            output.append([
+                "uuid": sample.uuid.uuidString,
+                "startDate": ISO8601DateFormatter().string(from: sample.startDate),
+                "endDate": ISO8601DateFormatter().string(from: sample.endDate),
+                "value": valueStr,
+                "sourceName": sample.sourceRevision.source.name,
+                "sourceBundleId": sample.sourceRevision.source.bundleIdentifier
+            ])
+        }
+        
+        call.resolve(["data": output])
+    }
+    
+    healthStore.execute(query)
+}
 }
