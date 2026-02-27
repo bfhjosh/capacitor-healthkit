@@ -358,11 +358,24 @@ public class CapacitorHealthkitPlugin: CAPPlugin, CAPBridgedPlugin {
             var valueStr = "UNKNOWN"
             
             if sample.value == HKCategoryValueSleepAnalysis.inBed.rawValue {
-                valueStr = "INBED"
-            } else if sample.value == HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue {
-                valueStr = "ASLEEP"
+                    valueStr = "INBED"
             } else if sample.value == HKCategoryValueSleepAnalysis.awake.rawValue {
                 valueStr = "AWAKE"
+            } else {
+                // Check for iOS 16+ Sleep Stages
+                if #available(iOS 16.0, *) {
+                    if sample.value == HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue ||
+                        sample.value == HKCategoryValueSleepAnalysis.asleepCore.rawValue ||
+                        sample.value == HKCategoryValueSleepAnalysis.asleepDeep.rawValue ||
+                        sample.value == HKCategoryValueSleepAnalysis.asleepREM.rawValue {
+                        valueStr = "ASLEEP"
+                    }
+                } else {
+                    // Fallback for iOS 15
+                    if sample.value == HKCategoryValueSleepAnalysis.asleep.rawValue {
+                        valueStr = "ASLEEP"
+                    }
+                }
             }
             
             output.append([
