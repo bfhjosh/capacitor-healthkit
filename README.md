@@ -1,115 +1,27 @@
-# Capacitor HealthKit Plugin
+# @perfood/capacitor-healthkit v2
 
-We are slowly working on the next version of this plugin. PRs to the main branch are no longer being accepted, please work with the v2 branch from now on. v2 is already being published as alpha on npm.
+This is a complete re-write of the original plugin and still work in progress. v2 will have a complete new API and some new features. By far not everything has been implemented yet. You can test the most recent release of v2 by installing `@perfood/capacitor-healthkit@next`.
 
-:heart: Capacitor plugin to retrieve data from HealthKit :heart:
+## Install
 
-Disclaimer : _for now only some of the HK data base, in the future the retrieve base will be bigger !_
-
-## Getting Started
-
-### Prerequisites
-
-* Add **HealthKit to your Xcode project** (section signing & capabilities)
-
-![alt text](https://i.ibb.co/Bg03ZKf/auth-hk.png)
-
-* ADD **Privacy - Health Share Usage Description** to your Xcode project
-* ADD **Privacy - Health Update Usage Description** to your Xcode project
-
-You can simply put this into the `info.plist` file
-
-```
-	<key>NSHealthShareUsageDescription</key>
-	<string>Read Health Data</string>
-	<key>NSHealthUpdateUsageDescription</key>
-	<string>Read Health Data</string>
+```bash
+npm install @perfood/capacitor-healthkit@next
+npx cap sync
 ```
 
-### Installing
-
-Do
-
-```
-npm i --save @perfood/capacitor-healthkit
-```
-
-Then
-
-```
-npx cap update
-```
-
-And  **if you use Ionic or Angular, here a example setup:**
-
-in your .ts file add this:
-
-```
-import {
-  ActivityData,
-  CapacitorHealthkit,
-  OtherData,
-  QueryOutput,
-  SampleNames,
-  SleepData,
-} from '@perfood/capacitor-healthkit';
-
-const READ_PERMISSIONS = ['calories', 'stairs', 'activity', 'steps', 'distance', 'duration', 'weight'];
-
-```
-
-and then you can create async functions like this:
-
-```
-
-
-  public async requestAuthorization(): Promise<void> {
-    try {
-      await CapacitorHealthkit.requestAuthorization({
-        all: [''],
-        read: READ_PERMISSIONS,
-        write: [''],
-      });
-
-    } catch (error) {
-      console.error('[HealthKitService] Error getting Authorization:', error);
-    }
-  }
-
-  private async getActivityData(
-    startDate: Date,
-    endDate: Date = new Date(),
-  ): Promise<QueryOutput<ActivityData>> | undefined {
-    try {
-      const queryOptions = {
-        sampleName: SampleNames.WORKOUT_TYPE,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-        limit: 0,
-      };
-
-      return await CapacitorHealthkit.queryHKitSampleType<ActivityData>(queryOptions);
-    } catch (error) {
-      console.error(error);
-
-      return undefined;
-    }
-  }
-```
-
-so you can use the plugin for example with the call `CapacitorHealthkit.queryHKitSampleType(...`
-
-And you're all set ! :+1:
+## API
 
 <docgen-index>
 
 * [`requestAuthorization(...)`](#requestauthorization)
-* [`queryHKitSampleType(...)`](#queryhkitsampletype)
 * [`isAvailable()`](#isavailable)
-* [`multipleQueryHKitSampleType(...)`](#multiplequeryhkitsampletype)
-* [`isEditionAuthorized(...)`](#iseditionauthorized)
-* [`multipleIsEditionAuthorized(...)`](#multipleiseditionauthorized)
+* [`getAuthorizationStatus(...)`](#getauthorizationstatus)
+* [`getStatisticsCollection(...)`](#getstatisticscollection)
+* [`getBodyMassEntries(...)`](#getbodymassentries)
+* [`getWorkouts(...)`](#getworkouts)
+* [`getSleepAnalysis(...)`](#getsleepanalysis)
 * [Interfaces](#interfaces)
+* [Type Aliases](#type-aliases)
 
 </docgen-index>
 
@@ -119,31 +31,12 @@ And you're all set ! :+1:
 ### requestAuthorization(...)
 
 ```typescript
-requestAuthorization(authOptions: AuthorizationQueryOptions) => Promise<void>
+requestAuthorization(options: RequestAuthorizationOptions) => Promise<void>
 ```
 
-This functions will open the iOS Screen to let users choose their permissions. Keep in mind as developers, if the access has been denied by the user we will have no way of knowing - the query results will instead just be empty arrays.
-
-| Param             | Type                                                                            | Description                                                                                                                                |
-| ----------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| **`authOptions`** | <code><a href="#authorizationqueryoptions">AuthorizationQueryOptions</a></code> | These define which access we need. Possible Options include ['calories', 'stairs', 'activity', 'steps', 'distance', 'duration', 'weight']. |
-
---------------------
-
-
-### queryHKitSampleType(...)
-
-```typescript
-queryHKitSampleType<T>(queryOptions: SingleQueryOptions) => Promise<QueryOutput<T>>
-```
-
-This defines a query to the Healthkit for a single type of data.
-
-| Param              | Type                                                              | Description                                                                                                            |
-| ------------------ | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| **`queryOptions`** | <code><a href="#singlequeryoptions">SingleQueryOptions</a></code> | defines the type of data and the timeframe which shall be queried, a limit can be set to reduce the number of results. |
-
-**Returns:** <code>Promise&lt;<a href="#queryoutput">QueryOutput</a>&lt;T&gt;&gt;</code>
+| Param         | Type                                                                                |
+| ------------- | ----------------------------------------------------------------------------------- |
+| **`options`** | <code><a href="#requestauthorizationoptions">RequestAuthorizationOptions</a></code> |
 
 --------------------
 
@@ -154,54 +47,80 @@ This defines a query to the Healthkit for a single type of data.
 isAvailable() => Promise<void>
 ```
 
-This functions resolves if HealthKitData is available it uses the native HKHealthStore.isHealthDataAvailable() funtion of the HealthKit .
+--------------------
+
+
+### getAuthorizationStatus(...)
+
+```typescript
+getAuthorizationStatus(options: GetAuthorizationStatusOptions) => Promise<{ status: AuthorizationStatus; }>
+```
+
+| Param         | Type                                                                                    |
+| ------------- | --------------------------------------------------------------------------------------- |
+| **`options`** | <code><a href="#getauthorizationstatusoptions">GetAuthorizationStatusOptions</a></code> |
+
+**Returns:** <code>Promise&lt;{ status: <a href="#authorizationstatus">AuthorizationStatus</a>; }&gt;</code>
 
 --------------------
 
 
-### multipleQueryHKitSampleType(...)
+### getStatisticsCollection(...)
 
 ```typescript
-multipleQueryHKitSampleType(queryOptions: MultipleQueryOptions) => Promise<any>
+getStatisticsCollection(options: StatisticsCollectionOptions) => Promise<StatisticsCollectionOutput>
 ```
 
-This defines a query to the Healthkit for a single type of data. This function has not been tested.
+| Param         | Type                                                                                |
+| ------------- | ----------------------------------------------------------------------------------- |
+| **`options`** | <code><a href="#statisticscollectionoptions">StatisticsCollectionOptions</a></code> |
 
-| Param              | Type                                                                  | Description                                       |
-| ------------------ | --------------------------------------------------------------------- | ------------------------------------------------- |
-| **`queryOptions`** | <code><a href="#multiplequeryoptions">MultipleQueryOptions</a></code> | defines the sample types which can be queried for |
-
-**Returns:** <code>Promise&lt;any&gt;</code>
+**Returns:** <code>Promise&lt;<a href="#statisticscollectionoutput">StatisticsCollectionOutput</a>&gt;</code>
 
 --------------------
 
 
-### isEditionAuthorized(...)
+### getBodyMassEntries(...)
 
 ```typescript
-isEditionAuthorized(queryOptions: EditionQuery) => Promise<void>
+getBodyMassEntries(options: BodyMassQueryOptions) => Promise<BodyMassQueryOutput>
 ```
 
-Checks if there is writing permission for one specific sample type. This function has not been tested.
+| Param         | Type                                                                  |
+| ------------- | --------------------------------------------------------------------- |
+| **`options`** | <code><a href="#bodymassqueryoptions">BodyMassQueryOptions</a></code> |
 
-| Param              | Type                                                  | Description                                                                |
-| ------------------ | ----------------------------------------------------- | -------------------------------------------------------------------------- |
-| **`queryOptions`** | <code><a href="#editionquery">EditionQuery</a></code> | defines the sampletype for which you need to check for writing permission. |
+**Returns:** <code>Promise&lt;<a href="#bodymassqueryoutput">BodyMassQueryOutput</a>&gt;</code>
 
 --------------------
 
 
-### multipleIsEditionAuthorized(...)
+### getWorkouts(...)
 
 ```typescript
-multipleIsEditionAuthorized(queryOptions: MultipleEditionQuery) => Promise<void>
+getWorkouts(options: WorkoutsQueryOptions) => Promise<WorkoutsQueryOutput>
 ```
 
-Checks if there is writing permission for multiple sample types. This function has not been tested.
+| Param         | Type                                                                  |
+| ------------- | --------------------------------------------------------------------- |
+| **`options`** | <code><a href="#workoutsqueryoptions">WorkoutsQueryOptions</a></code> |
 
-| Param              | Type                                                                  | Description                                                                |
-| ------------------ | --------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| **`queryOptions`** | <code><a href="#multipleeditionquery">MultipleEditionQuery</a></code> | defines the sampletypes for which you need to check for writing permission. |
+**Returns:** <code>Promise&lt;<a href="#workoutsqueryoutput">WorkoutsQueryOutput</a>&gt;</code>
+
+--------------------
+
+
+### getSleepAnalysis(...)
+
+```typescript
+getSleepAnalysis(options: SleepAnalysisQueryOptions) => Promise<SleepAnalysisOutput>
+```
+
+| Param         | Type                                                                            |
+| ------------- | ------------------------------------------------------------------------------- |
+| **`options`** | <code><a href="#sleepanalysisqueryoptions">SleepAnalysisQueryOptions</a></code> |
+
+**Returns:** <code>Promise&lt;<a href="#sleepanalysisoutput">SleepAnalysisOutput</a>&gt;</code>
 
 --------------------
 
@@ -209,70 +128,120 @@ Checks if there is writing permission for multiple sample types. This function h
 ### Interfaces
 
 
-#### AuthorizationQueryOptions
-
-Used for authorization of reading and writing access.
+#### RequestAuthorizationOptions
 
 | Prop        | Type                  |
 | ----------- | --------------------- |
+| **`all`**   | <code>string[]</code> |
 | **`read`**  | <code>string[]</code> |
 | **`write`** | <code>string[]</code> |
-| **`all`**   | <code>string[]</code> |
 
 
-#### QueryOutput
-
-This interface is used for any results coming from HealthKit. It always has a count and the actual results.
-
-| Prop              | Type                |
-| ----------------- | ------------------- |
-| **`countReturn`** | <code>number</code> |
-| **`resultData`**  | <code>T[]</code>    |
-
-
-#### SingleQueryOptions
-
-This extends the Basequeryoptions for a single sample type.
+#### GetAuthorizationStatusOptions
 
 | Prop             | Type                |
 | ---------------- | ------------------- |
-| **`sampleName`** | <code>string</code> |
+| **`sampleType`** | <code>string</code> |
 
 
-#### MultipleQueryOptions
+#### StatisticsCollectionOutput
 
-This extends the Basequeryoptions for a multiple sample types.
-
-| Prop              | Type                  |
-| ----------------- | --------------------- |
-| **`sampleNames`** | <code>string[]</code> |
+| Prop       | Type                                                                  |
+| ---------- | --------------------------------------------------------------------- |
+| **`data`** | <code>{ startDate: string; endDate: string; value: number; }[]</code> |
 
 
-#### EditionQuery
+#### StatisticsCollectionOptions
 
-This is used for checking writing permissions.
+| Prop                         | Type                                                                                            |
+| ---------------------------- | ----------------------------------------------------------------------------------------------- |
+| **`startDate`**              | <code>string</code>                                                                             |
+| **`endDate`**                | <code>string</code>                                                                             |
+| **`anchorDate`**             | <code>string</code>                                                                             |
+| **`interval`**               | <code><a href="#statisticscollectionqueryinterval">StatisticsCollectionQueryInterval</a></code> |
+| **`quantityTypeSampleName`** | <code><a href="#quantitytype">QuantityType</a></code>                                           |
 
-| Prop             | Type                |
-| ---------------- | ------------------- |
-| **`sampleName`** | <code>string</code> |
+
+#### StatisticsCollectionQueryInterval
+
+| Prop        | Type                                                                      |
+| ----------- | ------------------------------------------------------------------------- |
+| **`unit`**  | <code>'second' \| 'minute' \| 'hour' \| 'day' \| 'month' \| 'year'</code> |
+| **`value`** | <code>number</code>                                                       |
 
 
-#### MultipleEditionQuery
+#### BodyMassQueryOutput
 
-This is used for checking writing permissions.
+| Prop       | Type                                                                                                                    |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **`data`** | <code>{ date: string; value: number; unit: string; uuid: string; sourceName: string; sourceBundleId: string; }[]</code> |
 
-| Prop              | Type                   |
-| ----------------- | ---------------------- |
-| **`sampleNames`** | <code>string[]</code> |
+
+#### BodyMassQueryOptions
+
+| Prop            | Type                |
+| --------------- | ------------------- |
+| **`startDate`** | <code>string</code> |
+| **`endDate`**   | <code>string</code> |
+| **`limit`**     | <code>number</code> |
+
+
+#### WorkoutsQueryOutput
+
+| Prop       | Type                                                                                                                                                                                                                                                                                                                                                                     |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **`data`** | <code>{ uuid: string; startDate: string; endDate: string; duration: number; device?: <a href="#healthkitdevice">HealthKitDevice</a>; source: string; sourceBundleId: string; workoutActivityType: string; workoutActivityTypeId: number; totalEnergyBurned?: number; totalDistance?: number; totalFlightsClimbed?: number; totalSwimmingStrokeCount?: number; }[]</code> |
+
+
+#### HealthKitDevice
+
+| Prop                      | Type                |
+| ------------------------- | ------------------- |
+| **`name`**                | <code>string</code> |
+| **`model`**               | <code>string</code> |
+| **`manufacturer`**        | <code>string</code> |
+| **`hardwareVersion`**     | <code>string</code> |
+| **`softwareVersion`**     | <code>string</code> |
+| **`firmwareVersion`**     | <code>string</code> |
+| **`localIdentifier`**     | <code>string</code> |
+| **`udiDeviceIdentifier`** | <code>string</code> |
+
+
+#### WorkoutsQueryOptions
+
+| Prop            | Type                |
+| --------------- | ------------------- |
+| **`startDate`** | <code>string</code> |
+| **`endDate`**   | <code>string</code> |
+| **`limit`**     | <code>number</code> |
+
+
+#### SleepAnalysisOutput
+
+| Prop       | Type                                                                                                                                                                 |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`data`** | <code>{ uuid: string; startDate: string; endDate: string; value: 'INBED' \| 'ASLEEP' \| 'AWAKE' \| 'UNKNOWN'; sourceName: string; sourceBundleId: string; }[]</code> |
+
+
+#### SleepAnalysisQueryOptions
+
+| Prop            | Type                | Description                                                             |
+| --------------- | ------------------- | ----------------------------------------------------------------------- |
+| **`startDate`** | <code>string</code> | ISO8601 string representing the start date of the query.                |
+| **`endDate`**   | <code>string</code> | ISO8601 string representing the end date of the query. Defaults to now. |
+| **`limit`**     | <code>number</code> | Maximum number of records to return. Defaults to 0 (no limit).          |
+
+
+### Type Aliases
+
+
+#### AuthorizationStatus
+
+<code>'notDetermined' | 'sharingDenied' | 'sharingAuthorized'</code>
+
+
+#### QuantityType
+
+<code>'stepCount'</code>
 
 </docgen-api>
-
-
-## Credits
-
-* Theo Creach (original author) - [Twitter](https://twitter.com/crcht)
-* Timothée Bilodeau - [Linkedin](https://www.linkedin.com/in/timoth%E9e-bilodeau-03080ab2/)
-
-## License
-
-This project is licensed under the MIT License
