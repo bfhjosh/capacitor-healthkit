@@ -9,7 +9,8 @@
   "files": [
     "dist/",
     "ios/Plugin/",
-    "PerfoodCapacitorHealthkit.podspec"
+    "PerfoodCapacitorHealthkit.podspec",
+    "Package.swift"
   ],
   "author": "Manuel Heidrich",
   "license": "MIT",
