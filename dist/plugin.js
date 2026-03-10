@@ -44,8 +44,6 @@ var capacitorCapacitorHealthkit = (function (exports, core) {
 
     exports.CapacitorHealthkit = CapacitorHealthkit;
 
-    Object.defineProperty(exports, '__esModule', { value: true });
-
     return exports;
 
 })({}, capacitorExports);
